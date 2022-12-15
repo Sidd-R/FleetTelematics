@@ -8,7 +8,7 @@ function AddRoute({route,submit}) {
          <h1>Add Route</h1>
     <form >
         <label >Name</label>
-        <input type="text" id="fname" name="firstname"  onChange={e => route.setTemprature(e.target.value)}/>
+        <input type="text" id="fname" name="firstname"  onChange={e => route.setName(e.target.value)}/>
 
         <br />
 
