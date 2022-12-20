@@ -1,7 +1,7 @@
 import { Route,Routes } from 'react-router';
 import Homepage from './components/Homepage';
 import WelcomeFedex from './components/WelcomeFedex';
-import {useState} from 'react'
+import {useState,useEffect} from 'react'
 import Login from './components/Login';
 import WelcomeAmazon from './components/WelcomeAmazon';
 import Driver from './components/Driver';
@@ -19,12 +19,9 @@ import AddReviewd from './components/AddReviewd';
 import axios from 'axios';
 
 function App() {
-  const nav = useNavigate()  
-
   const [type, settype] = useState(-1) // 0 amazon 1 dsp
   const [age, setAge] = useState(0)
   const [trips, setTrips] = useState(0)
-  const [safety, setSafety] = useState(0)
   const [milesd, setMilesd] = useState(0)
   const [name, setName] = useState("")
   const [speeding, setSpeeding] = useState(0)
@@ -39,21 +36,87 @@ function App() {
   const [wind, setWind] = useState(0)
   const [temprature, setTemprature] = useState(0)
   const [pressurew, setPressurew] = useState(0)
+  const [review, setReview] = useState("")
+  const [avg, setAvg] = useState()
+  const [pdsp, setPdsp] = useState([])
   const [driverList, setDriverList] = useState(drl)
   const [vehicleList, setVehicleList] = useState(vcl)
   const [routeList, setRouteList] = useState(rol)
-  const [review, setReview] = useState("")
-  const [avg, setAvg] = useState(42.8)
+  const [coeffv, setCoeffv ] = useState([])
+  const [coeffr, setCoeffr ] = useState([])
+  const [coeffd, setCoeffd ] = useState([])
 
-  // const [feedback, setFeedback] = useState('')
+  const nav = useNavigate()  
 
-  // console.log(rol);
-let r = 'nice'
-// axios.post('http://localhost:4000/',{r}).then(res => console.log(res['data']['data'])).then(err => console.log(err))
+  useEffect(() => {
+    axios.get('http://localhost:4000/vehicle').then(res => {
+      let x = (res['data']['data'].split(" ").map(e => e = Number(e)))
+      // setCoeffv([...x])
+      coeffv.push(...x)
+      console.log(x,'vehicle coeff');
+
+      vehicleList.forEach(e => {
+        // console.log(coeffv,"oo");
+        e.riskScore = 
+        ((e.battery == "good"? -1 : 1) * coeffv[0]) +
+        (e.year * coeffv[2]) +
+        (e.miles * coeffv[3]) +
+        (e.pressure * coeffv[4]) +  
+        (e.fuel * coeffv[5]) +
+        (e.oil * coeffv[6]) +
+        coeffv[7]
+        e.riskScore = Number(e.riskScore.toFixed(2))
+      })
+    })
+
+    axios.get('http://localhost:4000/route').then(res => {
+      let x = (res['data']['data'].split(" ").map(e => e = Number(e)))
+      // setCoeffr([...x])
+      coeffr.push(...x)
+      console.log(x,'route coeff');
+
+      routeList.forEach(e => {
+        e.riskScore = 
+        (e.rain * coeffr[0]) +
+        (e.temprature * coeffr[1]) +
+        (e.pressure * coeffr[2]) + 
+        (e.wind * coeffr[3]) +
+        coeffr[4]
+
+        e.riskScore = Number(e.riskScore.toFixed(2))
+      })
+    })
+
+    axios.get('http://localhost:4000/driver').then(res => {
+      let x = (res['data']['data'].split(" ").map(e => e = Number(e)))
+      // setCoeffd([...x])
+      coeffd.push(...x)
+      console.log(x,'driver coeff');
+
+      driverList.forEach(e => {
+        e.safety =
+        (e.age * coeffd[0]) +
+        (e.trips * coeffd[1])  +
+        (e.miles * coeffd[2])  +
+        (e.speeding * coeffd[3]) +
+        (e.seatbelt * coeffd[4]) +
+        coeffd[5]
+
+        e.safety = Number(e.safety.toFixed(2))
+      })
+    })
+
+  }, [avg])
+
+  useEffect( () => {
+    calAvg()
+  }, [])
+  
+  let r 
+  // axios.post('http://localhost:4000/',{r}).then(res => console.log(res['data']['data'])).then(err => console.log(err))
 
   const driver = {
     setAge: setAge,
-    setSafety: setSafety,
     setMiles: setMilesd,
     setName: setName,
     setSeatbelt: setSeatbelt,
@@ -74,37 +137,29 @@ let r = 'nice'
   }
 
   const submitDriver = () => {
+    console.log(coeffd,'lll')
 
-      let a1 = (age * 8.28335529e-2) 
-      let a2 = (trips * -3.48321625e-3)  
-      let a3 = (milesd * -4.18064156e-6)  
-      let a4 = (speeding * 9.9403103e-2) 
-      let a5 = (seatbelt * 7.67409511e-3)
-      let c =  56.39158563
-
-      // 4.3073447508 -4.54559720625 -0.10242571822 2.9820930900000002 42.00767409511 56.39158563
-      //  52 1305 24500 30 42
+      let a1 = (age * coeffd[0]) 
+      let a2 = (trips * coeffd[1])  
+      let a3 = (milesd * coeffd[2])  
+      let a4 = (speeding * coeffd[3]) 
+      let a5 = (seatbelt * coeffd[4])
+      let c =  coeffd[5]
 
       console.log(a1,a2,a3,a4,a5,c)
       console.log(age,trips,milesd,speeding,seatbelt)
 
       let safety = a1 + a2 + a3 + a4 + a5 + c
 
-    // let feedback = ''
     safety = Number(safety.toFixed(2))
-    console.log(review);
+    // console.log(review);
 
-    fetch('http://localhost:4000/',{
-      headers: {
-          'Content-type': 'application/json'
-      },
+    fetch('http://localhost:4000/feedback',{
+      headers: {'Content-type': 'application/json'},
       method: 'POST',
-      body: JSON.stringify({
-        review : review
-      })
+      body: JSON.stringify({review : review})
     }).then(res => res.json()).then(data => {
-      console.log(data);
-      driverList.push({
+      let x = {
         age: age,
         miles:milesd,
         name:name,
@@ -112,15 +167,15 @@ let r = 'nice'
         speeding:speeding,
         seatbelt:seatbelt,
         trips:trips,
-        safety: safety,
+        safety: data['data'] == 'Positive feedback'? Number((safety + 5).toFixed(2))  : Number((safety - 5).toFixed(2)),
         feedback: data['data']
-      })
+      }
+      driverList.push(x)
       calAvg()
       nav('/driver')
+
+      axios.post('http://localhost:4000/addDriver',{x}).then(res => console.log(res)).then(err => console.log(err))
     })
-
-    
-
     console.log(driverList);
   }
 
@@ -132,23 +187,20 @@ let r = 'nice'
     setMiles:setMilesv,
     setPressure:setPressuret,
     setYear:setYear
-
   }
 
   const submitVehicle = () => {
     let riskScore = 
-    (battery * 3.48875089e-01) +
-    (year * -1.68438593e-1) +
-    (milesv * 4.33253695e-6) +
-    (pressuret * -7.96480786e-1) +  
-    (fuel * -8.27616914e-2) +
-    (oil * 3.53904422e-2) +
-    435.99589843
+    (battery * coeffv[0]) +
+    (year * coeffv[2]) +
+    (milesv * coeffv[3]) +
+    (pressuret * coeffv[4]) +  
+    (fuel * coeffv[5]) +
+    (oil * coeffv[6]) +
+    coeffv[7]
 
-    // calAvg()
-    // console.log(avg);
 
-    vehicleList.push({
+    let x = {
       name:name,
       year:year,
       miles:milesv,
@@ -157,8 +209,12 @@ let r = 'nice'
       pressure:pressuret,
       battery:battery == -1? "good" : "average",
       riskScore:Number(riskScore.toFixed(2))
-    })
+    }
+
+    vehicleList.push(x)
     calAvg()
+
+    axios.post('http://localhost:4000/addVehicle',{x}).then(res => console.log(res)).then(err => console.log(err))
 
     console.log(vehicleList);
   }
@@ -173,22 +229,26 @@ let r = 'nice'
 
   const submitRoute = () => {
     let riskScore = 
-      (rain * -0.03419579) +
-      (temprature * 0.05295392) +
-      (pressurew * 0.11649792) + 
-      (wind * 0.05210126) +
-      57.73539292
+      (rain * coeffr[0]) +
+      (temprature * coeffr[1]) +
+      (pressurew * coeffr[2]) + 
+      (wind * coeffr[3]) +
+      coeffr[4]
 
-    routeList.push({
+    let x = {
       name:name,
       rain:rain,
       pressure:pressurew,
       temprature:temprature,
       wind:wind,
       riskScore:Number(riskScore.toFixed(2))
-    })
+    }
+
+    routeList.push(x)
 
     calAvg()
+
+    axios.post('http://localhost:4000/addRoute',{x}).then(res => console.log(res)).then(err => console.log(err))
 
     console.log(routeList);
   }
@@ -207,12 +267,9 @@ let r = 'nice'
        setReview(data['data'])
     })
 
-
     console.log(review);
   }
   
-  // calAvg()
-
   return (
     <div className="App">
       <Routes>
@@ -221,8 +278,8 @@ let r = 'nice'
         <Route path='/' element={<Homepage type={type} settype={settype}/>}/> 
         }
         {type == 1 ?
-        <Route path='/services' element={<WelcomeFedex settype={settype}/>}/> :
-        <Route path='/services' element={<WelcomeAmazon avg={avg} settype={settype}/>}/>
+        <Route path='/services' element={<WelcomeFedex settype={settype} type ={type}/>}/> :
+        <Route path='/services' element={<WelcomeAmazon settype={settype} pdsp={pdsp} avg={avg}/>}/>
         }
         <Route path='/driver' element={<Driver driverList={driverList} settype={settype} />}/>
         <Route path='/addDriver' element={<AddDriver submit={submitDriver} driver={driver} />}/>

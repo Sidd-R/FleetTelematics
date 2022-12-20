@@ -4,12 +4,13 @@ import '../welFedex.css'
 import Contact from './Contact'
 import Navbar from './Navbar'
 
-function WelcomeFedex({settype}) {
+function WelcomeFedex({settype,type}) {
   return (
     <div>
         <Navbar settype={settype}/>
         <div className="welFe">
         {/* <section className='section1'> */}
+        {/* {type == 2? } */}
             <img className='section1-img' src={require("../images/welFedex-section1.png")} />
         {/* </section> */}
         <section className='section2'>

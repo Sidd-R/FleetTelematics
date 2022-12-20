@@ -25,7 +25,7 @@ function addvehicle({submit,vehicle}) {
           }}/>
         <label>good </label>
         <input  type="radio" name="battery" value="no" onClick={() => {
-          vehicle.setBattery1(1)
+          vehicle.setBattery(1)
           }}/>
         <label> average </label>
         <br />

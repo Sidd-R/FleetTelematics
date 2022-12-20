@@ -21,17 +21,17 @@ df.head()
 # ax1 = sns.heatmap(corr, cbar=0, linewidths=2,vmax=1, vmin=0, square=True, cmap='Blues')
 # plt.show()
 
-df.info()
+# df.info()
 
 df['BATTERY_HEALTH'].value_counts()
 
-print(X[1])
+# print(X[1])
 
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
 ct = ColumnTransformer(transformers=[('encoder', OneHotEncoder(), [2])], remainder='passthrough')
 X = np.array(ct.fit_transform(X))
-print(X[1])
+# print(X[1])
 
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 1)
@@ -40,6 +40,7 @@ from sklearn.linear_model import LinearRegression
 regressor = LinearRegression()
 regressor.fit(X_train, y_train)
 
-regressor.coef_
+temp = list(regressor.coef_)
+temp.append(regressor.predict([[0,0,0,0,0,0,0]])[0])
 
-print(regressor.predict([[0,0,0,0,0,0,0]]))
+print(*temp)

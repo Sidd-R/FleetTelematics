@@ -6,7 +6,7 @@ export const vehicleList = [
         oil: 65,
         fuel: 45,
         pressure: 32,
-        battery: 'AVG',
+        battery: 'average',
         riskScore: 78.1
     },
     {
@@ -16,7 +16,7 @@ export const vehicleList = [
         oil: 82,
         fuel: 51,
         pressure: 18,
-        battery: 'AVG',
+        battery: 'average',
         riskScore: 69.9
     },
     {
@@ -26,7 +26,7 @@ export const vehicleList = [
         oil: 24,
         fuel: 26,
         pressure: 65,
-        battery: 'GOOD',
+        battery: 'good',
         riskScore: 83.9
     },
     {
@@ -36,7 +36,7 @@ export const vehicleList = [
         oil: 23,
         fuel: 26,
         pressure: 65,
-        battery: 'AVG',
+        battery: 'average',
         riskScore: 42.3
     }
 ]
