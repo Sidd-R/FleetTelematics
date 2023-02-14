@@ -1,6 +1,9 @@
 This is a group project made for Fleet Risk Business Insight Competetion at TechFest IIT Bombay. 
 The entire webapp was made my me, and the ml model was made by my teammates.
 
+*App Demo:
+video link:- https://drive.google.com/file/d/1cSDyyEedCyv2cjSMo3n4zVloVJaz1udv/view?usp=sharing
+
 *Instructions to run the webapp:
 1. to run the web app, 
   ->first clone the repo and install requires node modules using "npm install"
